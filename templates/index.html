@@ -3,30 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Stream HLS videos from .m3u8 playlists with a modern, responsive player.">
-    <meta name="author" content="Your Name">
+    <meta name="description" content="Stream HLS videos from .m3u8 playlists with a modern, responsive player">
+    <meta name="author" content="Modern Media Player">
     <meta name="robots" content="index, follow">
-    <meta property="og:title" content="m3u8 Media Player">
-    <meta property="og:description" content="A modern, serverless solution for streaming HLS videos.">
-    <meta property="og:image" content="your-image-url.jpg">
-    <title>m3u8 Media Player</title>
+    <meta property="og:title" content="Modern M3U8 Media Player">
+    <meta property="og:description" content="A modern, serverless solution for streaming HLS videos">
+    <meta property="og:image" content="/api/placeholder/1200/630">
+    <title>Modern M3U8 Media Player</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.5.3/video-js.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .playlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .playlist-card {
+            background: var(--card-background);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .playlist-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .playlist-info {
+            padding: 1.5rem;
+        }
+
+        .playlist-info h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .playlist-info p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        }
+
+        .video-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .control-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .control-button:hover {
+            background: var(--secondary-color);
+        }
+
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+        }
+
+        .error-message {
+            display: none;
+            background: #ef4444;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1.5rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .playlist-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Available Playlists</h1>
-        <div class="playlist-list">
+        <header class="header">
+            <h1>Modern M3U8 Player</h1>
+            <p>Stream your favorite content with our advanced HLS player</p>
+        </header>
+
+        <div class="playlist-grid">
             {% for playlist in playlists %}
-                <div class="playlist-item">
+            <div class="playlist-card">
+                <div class="playlist-info">
                     <h2>{{ playlist.name }}</h2>
-                    <video id="video-player" class="video-js vjs-default-skin" controls>
-                        <source src="{{ playlist.url }}" type="application/x-mpegURL">
-                    </video>
+                    <p>{{ playlist.description if playlist.description else "Stream high-quality content" }}</p>
                 </div>
+                <div class="video-container">
+                    <video 
+                        id="video-player-{{ loop.index }}" 
+                        class="video-js vjs-big-play-centered"
+                        controls 
+                        preload="auto"
+                        data-setup='{
+                            "fluid": true,
+                            "playbackRates": [0.5, 1, 1.5, 2],
+                            "controlBar": {
+                                "volumePanel": {"inline": false},
+                                "pictureInPictureToggle": true
+                            }
+                        }'>
+                        <source src="{{ playlist.url }}" type="application/x-mpegURL">
+                        <p class="vjs-no-js">
+                            To view this video please enable JavaScript, and consider upgrading to a
+                            web browser that supports HTML5 video
+                        </p>
+                    </video>
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    </div>
+                    <div class="error-message">
+                        An error occurred while loading the video. Please try again.
+                    </div>
+                </div>
+                <div class="playlist-info">
+                    <div class="controls-wrapper">
+                        <button class="control-button" onclick="togglePlayback({{ loop.index }})">
+                            <i class="fas fa-play"></i>
+                            <span>Play</span>
+                        </button>
+                        <button class="control-button" onclick="toggleMute({{ loop.index }})">
+                            <i class="fas fa-volume-up"></i>
+                            <span>Mute</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.8.3/video.min.js"></script>
-    <script src="static/scripts.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.5.3/video.min.js"></script>
+    <script>
+        // Initialize video players
+        document.addEventListener('DOMContentLoaded', function() {
+            const players = {};
+            
+            document.querySelectorAll('.video-js').forEach(element => {
+                const player = videojs(element.id);
+                const index = element.id.split('-').pop();
+                players[index] = player;
+
+                // Add event listeners
+                player.on('waiting', () => {
+                    element.parentElement.querySelector('.loading-spinner').style.display = 'block';
+                });
+
+                player.on('playing', () => {
+                    element.parentElement.querySelector('.loading-spinner').style.display = 'none';
+                });
+
+                player.on('error', () => {
+                    element.parentElement.querySelector('.error-message').style.display = 'block';
+                    element.parentElement.querySelector('.loading-spinner').style.display = 'none';
+                });
+            });
+
+            // Store players in window object for access by control buttons
+            window.videoPlayers = players;
+        });
+
+        // Playback control functions
+        function togglePlayback(index) {
+            const player = window.videoPlayers[index];
+            const button = document.querySelector(`#video-player-${index}`).parentElement.parentElement.querySelector('.control-button');
+            
+            if (player.paused()) {
+                player.play();
+                button.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
+            } else {
+                player.pause();
+                button.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+            }
+        }
+
+        function toggleMute(index) {
+            const player = window.videoPlayers[index];
+            const button = document.querySelector(`#video-player-${index}`).parentElement.parentElement.querySelectorAll('.control-button')[1];
+            
+            if (player.muted()) {
+                player.muted(false);
+                button.innerHTML = '<i class="fas fa-volume-up"></i><span>Mute</span>';
+            } else {
+                player.muted(true);
+                button.innerHTML = '<i class="fas fa-volume-mute"></i><span>Unmute</span>';
+            }
+        }
+    </script>
 </body>
 </html>

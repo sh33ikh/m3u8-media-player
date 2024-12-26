@@ -1,24 +1,17 @@
 import os
 import logging
 from pathlib import Path
-from flask import Flask, render_template, jsonify
-import requests
+from flask import Flask, render_template, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-
-# Initialize logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 
-# Config for the folder containing m3u8 files
 VIDEO_FOLDER = './playlists'
 ALLOWED_EXTENSIONS = {'m3u8'}
 
-# Function to check if file is allowed
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Function to scan and list all m3u8 files
 def scan_playlists():
     playlists = []
     for root, _, files in os.walk(VIDEO_FOLDER):
@@ -30,18 +23,16 @@ def scan_playlists():
                 })
     return playlists
 
-# Route to serve the homepage with available playlists
 @app.route('/')
 def index():
     playlists = scan_playlists()
     return render_template('index.html', playlists=playlists)
 
-# Route to serve m3u8 files
 @app.route('/playlists/<filename>')
 def serve_playlist(filename):
     file_path = os.path.join(VIDEO_FOLDER, filename)
     if os.path.exists(file_path):
-        return app.send_static_file(file_path)
+        return send_from_directory(VIDEO_FOLDER, filename)
     else:
         return "Playlist not found", 404
 

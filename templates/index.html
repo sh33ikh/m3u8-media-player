@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Stream HLS videos from .m3u8 playlists with a modern, responsive player">
-    <meta name="author" content="Modern Media Player">
+    <meta name="description" content="Modern M3U8 Player - Stream your playlists">
     <title>Modern M3U8 Player</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.5.3/video-js.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --background-color: #f8fafc;
-            --card-background: #ffffff;
-            --text-primary: #1e293b;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
             --text-secondary: #64748b;
-            --error-color: #ef4444;
+            --error: #ef4444;
         }
 
         * {
@@ -27,44 +26,41 @@
 
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-primary);
-            line-height: 1.5;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
         }
 
-        .container {
+        .app-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 1rem;
         }
 
-        .header {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 2rem 1rem;
+            padding: 2rem;
+            border-radius: 1rem;
             margin-bottom: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
             text-align: center;
-        }
-
-        .main-player {
-            margin-bottom: 2rem;
-            background: var(--card-background);
-            padding: 1rem;
-            border-radius: 0.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .video-container {
+        .player-container {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-wrapper {
             position: relative;
-            width: 100%;
             padding-top: 56.25%;
+            background: black;
+            border-radius: 0.5rem;
+            overflow: hidden;
         }
 
         .video-js {
@@ -75,62 +71,84 @@
             height: 100%;
         }
 
+        .playlists-section {
+            margin-top: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
         .playlist-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1rem;
-            margin-top: 1rem;
         }
 
         .playlist-card {
-            background: var(--card-background);
+            background: var(--surface);
             border-radius: 0.5rem;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            padding: 1rem;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
         }
 
         .playlist-card:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .playlist-info {
-            padding: 1rem;
+        .playlist-card.active {
+            border-color: var(--primary);
         }
 
-        .playlist-info h3 {
+        .playlist-name {
+            font-size: 1.1rem;
+            font-weight: 600;
             margin-bottom: 0.5rem;
-            color: var(--text-primary);
         }
 
         .playlist-meta {
             font-size: 0.875rem;
             color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .error-message {
-            background-color: var(--error-color);
+            background: var(--error);
             color: white;
             padding: 1rem;
             border-radius: 0.5rem;
             margin: 1rem 0;
             text-align: center;
+            animation: slideIn 0.3s ease;
         }
 
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
+        @keyframes slideIn {
+            from { transform: translateY(-1rem); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.5rem;
+            .app-container {
+                padding: 0.5rem;
             }
 
-            .container {
-                padding: 0.5rem;
+            .app-header {
+                padding: 1.5rem;
+                border-radius: 0.5rem;
             }
 
             .playlist-grid {
@@ -140,18 +158,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
+    <div class="app-container">
+        <header class="app-header">
             <h1>Modern M3U8 Player</h1>
         </header>
 
         <main>
-            <div class="main-player">
-                <div class="video-container">
+            <div class="player-container">
+                <div class="video-wrapper">
                     <video 
-                        id="main-video-player" 
+                        id="main-player"
                         class="video-js vjs-big-play-centered"
-                        controls 
+                        controls
                         preload="auto"
                         data-setup='{
                             "fluid": true,
@@ -162,85 +180,106 @@
                             }
                         }'>
                         <p class="vjs-no-js">
-                            To view this video please enable JavaScript, and consider upgrading to a
-                            web browser that supports HTML5 video
+                            Please enable JavaScript to view this video.
                         </p>
                     </video>
                 </div>
             </div>
 
-            <div class="playlist-grid">
-                {% for playlist in playlists %}
-                <div class="playlist-card" onclick="loadPlaylist('{{ playlist.url }}', '{{ playlist.name }}')">
-                    <div class="playlist-info">
-                        <h3>{{ playlist.name }}</h3>
+            <section class="playlists-section">
+                <div class="section-header">
+                    <h2>Available Playlists</h2>
+                </div>
+                <div class="playlist-grid">
+                    {% for playlist in playlists %}
+                    <div class="playlist-card" onclick="loadPlaylist('{{ playlist.url }}', this)" data-filename="{{ playlist.filename }}">
+                        <div class="playlist-name">{{ playlist.name }}</div>
                         <div class="playlist-meta">
-                            <i class="fas fa-clock"></i> Last modified: {{ playlist.last_modified|datetime }}
+                            <span class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                {{ playlist.modified.split('T')[0] }}
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-file"></i>
+                                {{ '%0.1f'|format(playlist.size / 1024) }} KB
+                            </span>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
+            </section>
         </main>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.5.3/video.min.js"></script>
     <script>
         let player;
-        
+        let currentCard = null;
+
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize video.js player
-            player = videojs('main-video-player');
+            player = videojs('main-player', {
+                errorDisplay: false,
+                fluid: true
+            });
 
-            // Load default playlist if available
-            const defaultPlaylist = document.querySelector('.playlist-card');
-            if (defaultPlaylist) {
-                defaultPlaylist.click();
+            // Load first playlist by default
+            const firstPlaylist = document.querySelector('.playlist-card');
+            if (firstPlaylist) {
+                firstPlaylist.click();
             }
 
-            // Error handling
+            // Handle player errors
             player.on('error', function() {
-                console.error('Video player error:', player.error());
                 showError('Error playing video. Please try another playlist.');
             });
         });
 
-        function loadPlaylist(url, name) {
-            // Update player source
-            player.src({
-                src: url,
-                type: 'application/x-mpegURL'
-            });
+        function loadPlaylist(url, cardElement) {
+            try {
+                // Update player source
+                player.src({
+                    src: url,
+                    type: 'application/x-mpegURL'
+                });
 
-            // Start playing
-            player.play().catch(function(error) {
-                console.error('Playback failed:', error);
-                showError('Playback failed. Please try again.');
-            });
+                // Update UI
+                if (currentCard) {
+                    currentCard.classList.remove('active');
+                }
+                cardElement.classList.add('active');
+                currentCard = cardElement;
 
-            // Update UI to show currently playing
-            document.querySelectorAll('.playlist-card').forEach(card => {
-                card.style.border = 'none';
-            });
-            event.currentTarget.style.border = '2px solid var(--primary-color)';
+                // Start playing
+                player.play().catch(function(error) {
+                    console.error('Playback failed:', error);
+                    showError('Playback failed. Please try again.');
+                });
+            } catch (error) {
+                console.error('Error loading playlist:', error);
+                showError('Failed to load playlist. Please try again.');
+            }
         }
 
         function showError(message) {
-            // Remove any existing error messages
-            const existingError = document.querySelector('.error-message');
+            const container = document.querySelector('.player-container');
+            const existingError = container.querySelector('.error-message');
+            
             if (existingError) {
                 existingError.remove();
             }
 
-            // Create and show new error message
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
-            document.querySelector('.main-player').appendChild(errorDiv);
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                ${message}
+            `;
+            container.appendChild(errorDiv);
 
-            // Auto-hide after 5 seconds
             setTimeout(() => {
-                errorDiv.remove();
+                errorDiv.style.opacity = '0';
+                setTimeout(() => errorDiv.remove(), 300);
             }, 5000);
         }
     </script>
